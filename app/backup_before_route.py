@@ -7,7 +7,7 @@ from pydantic import BaseModel
 from random import randrange
 import psycopg2
 
-from typing import Optional, List
+from typing import Optional,List
 from psycopg2.extras import RealDictCursor
 import time
 from sqlalchemy.orm  import Session 

@@ -1,6 +1,5 @@
 from concurrent.futures.process import _python_exit
 from fastapi import  Depends, FastAPI,Response,status,HTTPException,Depends,APIRouter
-from pip import List
 from sqlalchemy.orm  import Session
 from .. import models, schemas , utils, oauth2
 from ..database import get_db
