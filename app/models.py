@@ -93,8 +93,6 @@ class month(Base):
     id = Column(Integer, primary_key=True, nullable= False)
     working=Column(Boolean,nullable=False)
     date=Column(Date,unique=True,nullable=False)
-    no_of_bays_working60=Column(Integer,nullable=False)
-    no_of_bays_working30=Column(Integer,nullable=False)
     E=Column(Boolean,nullable=False,server_default=Text(False))
 
 class days_10(Base):

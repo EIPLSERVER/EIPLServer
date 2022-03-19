@@ -37,15 +37,14 @@ async def filled(product :str,date : date ,db: Session = Depends(get_db)):
 async def screate(payload:schemas.createslot,slot_id:schemas.createslot_id,db: Session = Depends(get_db), current_user : int = Depends(oauth2.get_current_user)):
     print(slot_id.slot_id)
     new_post = models.slots(phone = current_user.phone,client_id=current_user.client_id, **payload.dict())
-    post_update =  db.query(models.days_10).filter(models.days_10.id == slot_id.slot_id)
-    post = post_update.first()
-    print(post.booked)
+    post_update =  db.query(models.days_10).filter(models.days_10.id == slot_id.slot_id).first()
+    post_update.booked = True
 
-    # post_update.update(booked = True,synchronize_session= False)
     db.add(new_post)
     db.commit()
     db.refresh(new_post)
-    return  new_post
+    db.refresh(post_update)
+    return  new_post,post_update
     
 
 

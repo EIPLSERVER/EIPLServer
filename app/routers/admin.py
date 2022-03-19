@@ -3,6 +3,8 @@ from fastapi import  Depends, FastAPI,Response,status,HTTPException,Depends,APIR
 from sqlalchemy.orm  import Session
 from .. import models, schemas , utils, oauth2
 from ..database import get_db
+import calendar
+import datetime
 
 router = APIRouter(
     prefix= "/admin",
@@ -184,3 +186,31 @@ async def days_10(db: Session = Depends(get_db) ,current_user : int = Depends(oa
     db.refresh(new_user)
     
     return  new_slot
+
+@router.get("/month_create",status_code=status.HTTP_201_CREATED)
+async def month_create(db: Session = Depends(get_db) ,current_user : int = Depends(oauth2.get_current_admin)):
+    print("hi")
+    res = "hi"
+    
+    today = datetime.date.today()
+    print(today.month)
+    print("Today's date:", today)
+
+    my_cal= calendar.Calendar()
+    year = today.year
+    month = today.month
+    dates = list(my_cal.itermonthdays3(year,month))
+    my_dates=[]
+    for i in dates:
+        if i[1] == month:
+            my_dates.append(i)
+    keys = ["date","working","E"]
+    for j in my_dates:
+        res = dict(zip(keys, [str(datetime.date(*j)),True,False]))
+        print(res)
+        new_user = models.month(**res)
+        db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    
+    return  new_user
