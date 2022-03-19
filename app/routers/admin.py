@@ -189,9 +189,6 @@ async def days_10(db: Session = Depends(get_db) ,current_user : int = Depends(oa
 
 @router.get("/month_create",status_code=status.HTTP_201_CREATED)
 async def month_create(db: Session = Depends(get_db) ,current_user : int = Depends(oauth2.get_current_admin)):
-    print("hi")
-    res = "hi"
-    
     today = datetime.date.today()
     print(today.month)
     print("Today's date:", today)
