@@ -12,7 +12,6 @@ router = APIRouter(
 
 @router.post("/acreate", status_code=status.HTTP_201_CREATED, response_model=schemas.createreturn)
 async def acreate(user: schemas.acreate, db: Session = Depends(get_db)):
-    # hast the password - user.password
 
     hasdhed_password = utils.hash(user.password)
     user.password = hasdhed_password
