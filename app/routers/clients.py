@@ -1,123 +1,131 @@
-from concurrent.futures.process import _python_exit
-from fastapi import  Depends, FastAPI,Response,status,HTTPException,Depends,APIRouter
-from sqlalchemy.orm  import Session
-from .. import models, schemas , utils, oauth2
+from fastapi import Depends, FastAPI, Response, status, HTTPException, Depends, APIRouter
+from sqlalchemy.orm import Session
+from .. import models, schemas, utils, oauth2
 from ..database import get_db
 
 router = APIRouter(
-    prefix= "/clients",
+    prefix="/clients",
     tags=['clients'])
 
-@router.post("/admin",status_code=status.HTTP_201_CREATED)
-async def client_create(data:schemas.client,db: Session = Depends(get_db) ,current_user : int = Depends(oauth2.get_current_admin)):
+
+@router.get("/admin/{id}")
+async def get_client_id(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_admin)):
+    product = db.query(models.clients).filter(models.clients.id == id).first()
+    print(product)
+
+    if product == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="not found")
+
+    return product
+
+
+@router.post("/admin", status_code=status.HTTP_201_CREATED)
+async def client_create(data: schemas.client, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_admin)):
 
     new_client = models.clients(**data.dict())
     db.add(new_client)
     db.commit()
     db.refresh(new_client)
-    return  new_client
+    return new_client
+
 
 @router.get('/admin')
-def get_clients(db: Session = Depends(get_db), current_admin : int = Depends(oauth2.get_current_admin)):
-    clients= db.query(models.clients).all()
+def get_clients(db: Session = Depends(get_db), current_admin: int = Depends(oauth2.get_current_admin)):
+    clients = db.query(models.clients).all()
 
     if not clients:
-        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail=f"No clients found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"No clients found")
 
     return clients
 
-@router.get('/admin{client}')
-def get_client(client:str,db: Session = Depends(get_db), current_user : int = Depends(oauth2.get_current_admin)):
-    client= db.query(models.clients.id).filter(models.clients.client== client).all()
 
-    if not client:
-        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail=f"{client} not found")
-
-    return client
-
-@router.delete("/admin{id}",status_code=status.HTTP_204_NO_CONTENT)
-async def delete_client(id:str ,db: Session = Depends(get_db) ,current_user : int = Depends(oauth2.get_current_admin)):
+@router.delete("/admin{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_client(id: str, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_admin)):
     client_q = db.query(models.clients).filter(models.clients.id == id)
-    product=client_q.first()
+    product = client_q.first()
 
     if product == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-        detail="not found")
-    client_q.delete(synchronize_session= False)
+                            detail="not found")
+    client_q.delete(synchronize_session=False)
     db.commit()
     return "successfully deleted"
 
 
-@router.put("/admin{id}",status_code=status.HTTP_202_ACCEPTED)
-async def update_client(id:int,payload:schemas.client,db: Session = Depends(get_db) ,current_user : str = Depends(oauth2.get_current_admin)):
+@router.put("/admin{id}", status_code=status.HTTP_202_ACCEPTED)
+async def update_client(id: int, payload: schemas.client, db: Session = Depends(get_db), current_user: str = Depends(oauth2.get_current_admin)):
     client_q = db.query(models.clients).filter(models.clients.id == id)
-    client=client_q.first()
+    client = client_q.first()
 
     if id == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-        detail="client not found")
+                            detail="client not found")
 
-    client_q.update(payload.dict(),synchronize_session= False)
+    client_q.update(payload.dict(), synchronize_session=False)
     db.commit()
-
 
     return client_q.first()
 
 
+# subadmins
+@router.get("/subadmin/{id}")
+async def get_client_id(id: int, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_subadmin)):
+    product = db.query(models.clients).filter(models.clients.id == id).first()
+    print(product)
 
-#subadmins
+    if product == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="not found")
 
-@router.post("/subadmin",status_code=status.HTTP_201_CREATED)
-async def client_create(data:schemas.client,db: Session = Depends(get_db) ,current_user : int = Depends(oauth2.get_current_subadmin)):
+    return product
+
+
+@router.post("/subadmin", status_code=status.HTTP_201_CREATED)
+async def client_create(data: schemas.client, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_subadmin)):
 
     new_client = models.clients(**data.dict())
     db.add(new_client)
     db.commit()
     db.refresh(new_client)
-    return  new_client
+    return new_client
+
 
 @router.get('/subadmin')
-def get_clients(db: Session = Depends(get_db), current_admin : int = Depends(oauth2.get_current_subadmin)):
-    clients= db.query(models.clients).all()
+def get_clients(db: Session = Depends(get_db), current_admin: int = Depends(oauth2.get_current_subadmin)):
+    clients = db.query(models.clients).all()
 
     if not clients:
-        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail=f"No clients found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail=f"No clients found")
 
     return clients
 
-@router.get('/subadmin{client}')
-def get_client(client:str,db: Session = Depends(get_db), current_user : int = Depends(oauth2.get_current_subadmin)):
-    client= db.query(models.clients.id).filter(models.clients.client== client).all()
 
-    if not client:
-        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail=f"{client} not found")
-
-    return client
-
-@router.delete("/subadmin{id}",status_code=status.HTTP_204_NO_CONTENT)
-async def delete_client(id:str ,db: Session = Depends(get_db) ,current_user : int = Depends(oauth2.get_current_subadmin)):
+@router.delete("/subadmin{id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_client(id: str, db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_subadmin)):
     client_q = db.query(models.clients).filter(models.clients.id == id)
-    product=client_q.first()
+    product = client_q.first()
 
     if product == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-        detail="not found")
-    client_q.delete(synchronize_session= False)
+                            detail="not found")
+    client_q.delete(synchronize_session=False)
     db.commit()
     return "successfully deleted"
 
 
-@router.put("/subadmin{id}",status_code=status.HTTP_202_ACCEPTED)
-async def update_client(id:int,payload:schemas.client,db: Session = Depends(get_db) ,current_user : str = Depends(oauth2.get_current_subadmin)):
+@router.put("/subadmin{id}", status_code=status.HTTP_202_ACCEPTED)
+async def update_client(id: int, payload: schemas.client, db: Session = Depends(get_db), current_user: str = Depends(oauth2.get_current_subadmin)):
     client_q = db.query(models.clients).filter(models.clients.id == id)
-    client=client_q.first()
+    client = client_q.first()
 
     if id == None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-        detail="client not found")
+                            detail="client not found")
 
-    client_q.update(payload.dict(),synchronize_session= False)
+    client_q.update(payload.dict(), synchronize_session=False)
     db.commit()
-
 
     return client_q.first()

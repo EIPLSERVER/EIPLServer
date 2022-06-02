@@ -72,20 +72,3 @@ app.include_router(auth.router)
 @app.get("/")
 async def root():
     return {"Message": "Welcome to East India Petroleum LTD slot booking system"}
-
-
-def geeks():
-    print("Shaurya says Geeksforgeeks")
-
-
-# Task scheduling
-# After every 10mins geeks() is called.
-schedule.every(5).seconds.do(geeks)
-
-
-# while True:
-
-# 	# Checks whether a scheduled task
-# 	# is pending to run or not
-# 	schedule.run_pending()
-# 	time.sleep(1)
